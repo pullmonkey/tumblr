@@ -15,6 +15,8 @@ class Tumblr
     
     # count the posts
     def self.count(options = {})
+      # TODO this does not work with private posts because ...['total'] does not include private posts
+      # so nothing works when you do an authenticated request
       
       #puts balh = {:num => 1}.merge(options).to_yaml      
       response = Tumblr::Request.read({:num => 1}.merge(options))
@@ -30,9 +32,10 @@ class Tumblr
     def self.find_initial(options)
       total = self.count
       options = {:start => (total - 1),  :num => 1} if(options.empty?)      
-      response = Tumblr::Request.read(options)
+      response = Tumblr::Request.read(options.merge(:num => 1))
 
-      return response['tumblr']['posts']['post'].first unless(options == {:start => (total - 1),  :num => 1})
+# don't need this anymore, since we are just asking for one post :num => 1
+#      return response['tumblr']['posts']['post'].first unless(options == {:start => (total - 1),  :num => 1})
       response['tumblr']['posts']['post']
     end
   
@@ -71,17 +74,20 @@ class Tumblr
     end
     
     # alias of find(:all)
-    def self.all(options = {})
+    def self.all(*args)
+      options = process_options(*args)
       self.find(:all, options)
     end
     
     # alias of find(:first)
-    def self.first(options = {})
+    def self.first(*args)
+      options = process_options(*args)
       self.find(:first, options)
     end
     
     # alias of find(:last)
-    def self.last(options = {})
+    def self.last(*args)
+      options = process_options(*args)
       self.find(:last, options)
     end
     
